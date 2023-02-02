@@ -131,6 +131,25 @@ Generate the ISO:
 
 Install `kubeseal` on the dev machine: `zypper in kubeseal`
 
+# Get the SUSE Manager proxy generated config in the Git repository
+
+The Fleet configuration Git repository for this demo is https://github.com/cbosdo/fleet-proxy.
+
+Set `GIT_REPO` variable to where the fleet git repository is cloned on the dev machine.
+Unpack the SUSE Manager generated configuration tarball and run:
+
+```
+kubectl create secret generic proxy-secret-import \
+    --from-file=httpd.yaml=httpd.yaml \
+    --from-file=ssh.yaml=ssh.yaml \
+    --dry-run=client \
+    --output json \
+    --cert tls.crt | kubeseal -o yaml >${GIT_REPO}/proxy-secrets/overlays/store1234/secrets.yaml
+```
+
+It is best to store the `tls.crt` file in the git repo as this is the only needed piece to encrypt the secrets.
+Once the secrets are generated, commit and push them in the git repository for Fleet to be able to consume them.
+
 
 # Create the proxy machine:
 
