@@ -1,0 +1,42 @@
+apiVersion: elemental.cattle.io/v1beta1
+kind: MachineInventorySelectorTemplate
+metadata:
+  name: store5678-machine-selector
+  namespace: fleet-default
+spec:
+  template:
+    spec:
+      selector:
+        matchExpressions:
+          - key: serialNumber
+            operator: In
+            values: [ 'PXY5678' ]
+---
+kind: Cluster
+apiVersion: provisioning.cattle.io/v1
+metadata:
+  name: store5678-proxy-cluster
+  namespace: fleet-default
+  labels:
+    proxy-ip: 192.168.111.111
+    proxy-fqdn: store5678-proxy.world-co.com
+    store: store5678
+    role: uyuni-proxy
+spec:
+  rkeConfig:
+    machinePools:
+      - controlPlaneRole: true
+        etcdRole: true
+        machineConfigRef:
+          apiVersion: elemental.cattle.io/v1beta1
+          kind: MachineInventorySelectorTemplate
+          name: store5678-machine-selector
+        name: pool1
+        quantity: 1
+        unhealthyNodeTimeout: 0s
+        workerRole: true
+    machineGlobalConfig:
+      disable:
+        - servicelb
+        - traefik
+  kubernetesVersion: v1.24.8+k3s1

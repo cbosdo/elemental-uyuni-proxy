@@ -1,0 +1,27 @@
+<network>
+  <name>world-co</name>
+  <forward mode='nat'/>
+  <bridge name='virbr2' stp='on' delay='0'/>
+  <mac address='2A:C3:A7:A7:00:01'/>
+  <domain name='world-co.com' localOnly='yes'/>
+  <dns>
+    <host ip='192.168.111.101'>
+      <hostname>store1234-proxy</hostname>
+    </host>
+    <host ip='192.168.111.111'>
+      <hostname>store5678-proxy</hostname>
+    </host>
+  </dns>
+  <ip address='192.168.111.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.111.2' end='192.168.111.254'/>
+      <host mac='2A:C3:A7:A7:00:02' name='uyuni' ip='192.168.111.2'/>
+      <host mac='2A:C3:A7:A7:00:03' name='rancher' ip='192.168.111.3'/>
+      <host mac='2A:C3:A7:A7:00:04' name='registry' ip='192.168.111.4'/>
+      <host mac='2A:C3:A7:A7:00:64' name='store1234-proxy-host' ip='192.168.111.100'/>
+      <host mac='2A:C3:A7:A7:00:6E' name='store5678-proxy-host' ip='192.168.111.110'/>
+      <bootp file='pxelinux.0' server='192.168.111.2'/>
+    </dhcp>
+  </ip>
+</network>
+

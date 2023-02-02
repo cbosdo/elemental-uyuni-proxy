@@ -1,0 +1,28 @@
+apiVersion: elemental.cattle.io/v1beta1
+kind: MachineRegistration
+metadata:
+  name: proxy-nodes
+  namespace: fleet-default
+spec:
+  machineName: "proxy-${System Information/Serial Number}"
+  config:
+    cloud-config:
+      users:
+        - name: root
+          passwd: linux
+      write_files:
+        - encoding: b64
+          path: /var/lib/rancher/k3s/server/manifests/sealed-key.yaml
+          permissions: "0600"
+          owner: "root"
+          group: "root"
+          content: SEALED_SECRETS_KEY
+    elemental:
+      install:
+        device: /dev/vda
+        reboot: true
+      registration: {}
+      system-agent: {}
+  machineInventoryLabels:
+    machinetype: "proxy"
+    serialNumber: "${System Information/Serial Number}"
