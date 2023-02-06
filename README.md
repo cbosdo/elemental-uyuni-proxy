@@ -121,7 +121,7 @@ Get the script to generate the ISO image:
 wget -q https://raw.githubusercontent.com/rancher/elemental/main/.github/elemental-iso-add-registration && chmod +x elemental-iso-add-registration
 ```
 
-Generate the ISO:
+Ensure either `podman` is installed or `docker` runs on the dev machine and generate the ISO:
 
 ```
 ./elemental-iso-add-registration initial-registration.yaml
@@ -143,8 +143,7 @@ kubectl create secret generic proxy-secret-import \
     --from-file=httpd.yaml=httpd.yaml \
     --from-file=ssh.yaml=ssh.yaml \
     --dry-run=client \
-    --output json \
-    --cert tls.crt | kubeseal -o yaml >${GIT_REPO}/proxy-secrets/overlays/store1234/secrets.yaml
+    --output json | kubeseal --cert tls.crt -o yaml >${GIT_REPO}/proxy-secrets/overlays/store1234/secrets.yaml
 ```
 
 It is best to store the `tls.crt` file in the git repo as this is the only needed piece to encrypt the secrets.
@@ -157,9 +156,9 @@ Once the secrets are generated, commit and push them in the git repository for F
 The machines to boot with the Elemental ISO are required to be UEFI-enabled and have a TPM device.
 In the demo environment I use virtual machines created as following:
 ```
-virt-install -n worldco-store1234-proxy --memory 4096 --vcpus 2 --cdrom $PWD/elemental-teal.x86_64.iso --disk /public/vms/worldco-store1234-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:64 --graphics vnc --tpm emulator --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY1234
+virt-install -n worldco-store1234-proxy --memory 4096 --vcpus 2 --cdrom $PWD/elemental-teal.x86_64.iso --disk /public/vms/worldco-store1234-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:64 --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY1234
 
-virt-install -n worldco-store5678-proxy --memory 4096 --vcpus 2 --cdrom $PWD/elemental-teal.x86_64.iso --disk /public/vms/worldco-store5678-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:6E --graphics vnc --tpm emulator --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY5678
+virt-install -n worldco-store5678-proxy --memory 4096 --vcpus 2 --cdrom $PWD/elemental-teal.x86_64.iso --disk /public/vms/worldco-store5678-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:6E --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY5678
 ```
 
 At creation time, SLE Micro 5.3 will be installed on the machines and k3s will be installed on it.
