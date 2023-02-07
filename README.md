@@ -134,6 +134,8 @@ Install `kubeseal` on the dev machine: `zypper in kubeseal`
 # Get the SUSE Manager proxy generated config in the Git repository
 
 The Fleet configuration Git repository for this demo is https://github.com/cbosdo/fleet-proxy.
+This is matching the configuration for my machines and should be forked and cloned.
+The URL of repository should be changed in `src/proxy-repo.yaml` to match the fork.
 
 Set `GIT_REPO` variable to where the fleet git repository is cloned on the dev machine.
 Unpack the SUSE Manager generated configuration tarball and run:
@@ -149,6 +151,15 @@ kubectl create secret generic proxy-secret-import \
 It is best to store the `tls.crt` file in the git repo as this is the only needed piece to encrypt the secrets.
 Once the secrets are generated, commit and push them in the git repository for Fleet to be able to consume them.
 
+Store the extracted `config.yaml` in the git repo `proxy/config.yaml` and remove the `proxy_fqdn` value from it.
+
+Commit all changes and push them to the remote git repository:
+
+```
+cd ${GIT_REPO}
+git commit -a -m "Updated the secrets and config"
+git push
+```
 
 # Create the proxy machine:
 
