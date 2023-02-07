@@ -140,8 +140,8 @@ Unpack the SUSE Manager generated configuration tarball and run:
 
 ```
 kubectl create secret generic proxy-secret-import \
-    --from-file=httpd.yaml=httpd.yaml \
-    --from-file=ssh.yaml=ssh.yaml \
+    --from-file=httpd.yaml=path/to/extracted/httpd.yaml \
+    --from-file=ssh.yaml=path/to/extracted/ssh.yaml \
     --dry-run=client \
     --output json | kubeseal --cert tls.crt -o yaml >${GIT_REPO}/proxy-secrets/overlays/store1234/secrets.yaml
 ```
