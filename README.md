@@ -88,6 +88,7 @@ kubectl -n kube-system create secret tls sealed-secrets-key --cert=tls.crt --key
 Edit the generated `sealed-secrets-key.yaml` file and add the following lines in the metadata:
 
 ```
+  namespace: kube-system
   labels:
     sealedsecrets.bitnami.com/sealed-secrets-key: active
 ```
