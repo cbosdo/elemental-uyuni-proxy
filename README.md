@@ -152,7 +152,7 @@ kubectl create secret generic proxy-secret-import \
 It is best to store the `tls.crt` file in the git repo as this is the only needed piece to encrypt the secrets.
 Once the secrets are generated, commit and push them in the git repository for Fleet to be able to consume them.
 
-Store the extracted `config.yaml` in the git repo `proxy/config.yaml` and remove the `proxy_fqdn` value from it.
+Store the extracted `config.yaml` in the git repo `proxy/config.yaml` and remove the `proxy_fqdn` line from it.
 
 Commit all changes and push them to the remote git repository:
 
