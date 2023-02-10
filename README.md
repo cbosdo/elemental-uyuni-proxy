@@ -138,21 +138,47 @@ The Fleet configuration Git repository for this demo is https://github.com/cbosd
 This is matching the configuration for my machines and should be forked and cloned.
 The URL of repository should be changed in `src/proxy-repo.yaml` to match the fork.
 
+In Uyuni/SUMA, create a Proxy Configuration, and copy the tar.gz file to the dev instance.
+Extract it to a folder with the name of your BRANCH.
+
+For example:
+
+```
+mkdir -p ~/store1234
+cd ~/store1234
+tar zxvf ../store1234-proxy-config.tar.gz
+```
+
+You should then have the three branch-specific files needed to generate the secret and config.
+
+```
+ls -l ~/store1234
+total 28
+-rw-r--r-- 1 root root 5925 Feb 10 12:51 config.yaml
+-rw------- 1 root root 9330 Feb 10 12:51 httpd.yaml
+-rw------- 1 root root 4226 Feb 10 12:51 ssh.yaml
+```
+
+
 Set `GIT_REPO` variable to where the fleet git repository is cloned on the dev machine.
-Unpack the SUSE Manager generated configuration tarball and run:
+Set 'BRANCH environment variable for the desired BRANCH location.  For example,
+```
+export GIT_REPO=~/fleet-proxy
+export BRANCH=store1234
+```
+Then run the following command to set the secret and configuration:
 
 ```
 kubectl create secret generic proxy-secret-import \
-    --from-file=httpd.yaml=path/to/extracted/httpd.yaml \
-    --from-file=ssh.yaml=path/to/extracted/ssh.yaml \
-    --dry-run=client \
-    --output json | kubeseal --cert tls.crt -o yaml >${GIT_REPO}/proxy-secrets/overlays/store1234/secrets.yaml
+    --from-file=httpd.yaml=$BRANCH/httpd.yaml \
+    --from-file=ssh.yaml=$BRANCH/ssh.yaml \
+    --dry-run client \
+    --output json | kubeseal --cert ~/tls.crt -o yaml >${GIT_REPO}/proxy-secrets/overlays/$BRANCH/secrets.yaml
 ```
 
-It is best to store the `tls.crt` file in the git repo as this is the only needed piece to encrypt the secrets.
 Once the secrets are generated, commit and push them in the git repository for Fleet to be able to consume them.
 
-Store the extracted `config.yaml` in the git repo `proxy/config.yaml` and remove the `proxy_fqdn` line from it.
+Store the extracted `config.yaml` (one time) in the git repo `proxy/config.yaml` and remove the `proxy_fqdn` line from it.
 
 Commit all changes and push them to the remote git repository:
 
