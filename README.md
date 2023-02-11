@@ -127,6 +127,8 @@ Ensure either `podman` is installed or `docker` runs on the dev machine and gene
 ```
 ./elemental-iso-add-registration initial-registration.yaml
 ```
+Move the ISO file to the /tmp directory for proper access installing virtual machines. 
+
 
 # Configure Fleet to deploy MetalLB and the Uyuni Proxy
 
@@ -138,21 +140,47 @@ The Fleet configuration Git repository for this demo is https://github.com/cbosd
 This is matching the configuration for my machines and should be forked and cloned.
 The URL of repository should be changed in `src/proxy-repo.yaml` to match the fork.
 
+In Uyuni/SUMA, create a Proxy Configuration, and copy the tar.gz file to the dev instance.
+Extract it to a folder with the name of your BRANCH.
+
+For example:
+
+```
+mkdir -p ~/store1234
+cd ~/store1234
+tar zxvf ../store1234-proxy-config.tar.gz
+```
+
+You should then have the three branch-specific files needed to generate the secret and config.
+
+```
+ls -l ~/store1234
+total 28
+-rw-r--r-- 1 root root 5925 Feb 10 12:51 config.yaml
+-rw------- 1 root root 9330 Feb 10 12:51 httpd.yaml
+-rw------- 1 root root 4226 Feb 10 12:51 ssh.yaml
+```
+
+
 Set `GIT_REPO` variable to where the fleet git repository is cloned on the dev machine.
-Unpack the SUSE Manager generated configuration tarball and run:
+Set 'BRANCH environment variable for the desired BRANCH location.  For example,
+```
+export GIT_REPO=~/fleet-proxy
+export BRANCH=store1234
+```
+Then run the following command to set the secret and configuration:
 
 ```
 kubectl create secret generic proxy-secret-import \
-    --from-file=httpd.yaml=path/to/extracted/httpd.yaml \
-    --from-file=ssh.yaml=path/to/extracted/ssh.yaml \
-    --dry-run=client \
-    --output json | kubeseal --cert tls.crt -o yaml >${GIT_REPO}/proxy-secrets/overlays/store1234/secrets.yaml
+    --from-file=httpd.yaml=$BRANCH/httpd.yaml \
+    --from-file=ssh.yaml=$BRANCH/ssh.yaml \
+    --dry-run client \
+    --output json | kubeseal --cert ~/tls.crt -o yaml >${GIT_REPO}/proxy-secrets/overlays/$BRANCH/secrets.yaml
 ```
 
-It is best to store the `tls.crt` file in the git repo as this is the only needed piece to encrypt the secrets.
 Once the secrets are generated, commit and push them in the git repository for Fleet to be able to consume them.
 
-Store the extracted `config.yaml` in the git repo `proxy/config.yaml` and remove the `proxy_fqdn` line from it.
+Store the extracted `config.yaml` (one time) in the git repo `proxy/config.yaml` and remove the `proxy_fqdn` line from it.
 
 Commit all changes and push them to the remote git repository:
 
@@ -165,12 +193,13 @@ git push
 # Create the proxy machine:
 
 
-The machines to boot with the Elemental ISO are required to be UEFI-enabled and have a TPM device.
+The machines to boot with the Elemental ISO created earlier are required to be UEFI-enabled and have a TPM 2.0 device.
 In the demo environment I use virtual machines created as following:
 ```
-virt-install -n worldco-store1234-proxy --memory 4096 --vcpus 2 --cdrom $PWD/elemental-teal.x86_64.iso --disk /public/vms/worldco-store1234-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:64 --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY1234
-
-virt-install -n worldco-store5678-proxy --memory 4096 --vcpus 2 --cdrom $PWD/elemental-teal.x86_64.iso --disk /public/vms/worldco-store5678-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:6E --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY5678
+virt-install -n worldco-store1234-proxy --memory 4096 --vcpus 2 --cdrom /tmp/elemental-teal.x86_64.iso --disk /public/vms/worldco-store1234-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:64 --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY1234
+```
+```
+virt-install -n worldco-store5678-proxy --memory 4096 --vcpus 2 --cdrom /tmp/elemental-teal.x86_64.iso --disk /public/vms/worldco-store5678-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:6E --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY5678
 ```
 
-At creation time, SLE Micro 5.3 will be installed on the machines and k3s will be installed on it.
+At creation time, SLE Micro 5.3 will be installed on the machines and k3s will be installed on it.   Now launch the Rancher webUI and watch the deployment happen!
