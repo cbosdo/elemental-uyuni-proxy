@@ -127,6 +127,8 @@ Ensure either `podman` is installed or `docker` runs on the dev machine and gene
 ```
 ./elemental-iso-add-registration initial-registration.yaml
 ```
+Move the ISO file to the /tmp directory for proper access installing virtual machines. 
+
 
 # Configure Fleet to deploy MetalLB and the Uyuni Proxy
 
@@ -191,12 +193,13 @@ git push
 # Create the proxy machine:
 
 
-The machines to boot with the Elemental ISO are required to be UEFI-enabled and have a TPM device.
+The machines to boot with the Elemental ISO created earlier are required to be UEFI-enabled and have a TPM 2.0 device.
 In the demo environment I use virtual machines created as following:
 ```
-virt-install -n worldco-store1234-proxy --memory 4096 --vcpus 2 --cdrom $PWD/elemental-teal.x86_64.iso --disk /public/vms/worldco-store1234-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:64 --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY1234
-
-virt-install -n worldco-store5678-proxy --memory 4096 --vcpus 2 --cdrom $PWD/elemental-teal.x86_64.iso --disk /public/vms/worldco-store5678-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:6E --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY5678
+virt-install -n worldco-store1234-proxy --memory 4096 --vcpus 2 --cdrom /tmp/elemental-teal.x86_64.iso --disk /public/vms/worldco-store1234-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:64 --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY1234
+```
+```
+virt-install -n worldco-store5678-proxy --memory 4096 --vcpus 2 --cdrom /tmp/elemental-teal.x86_64.iso --disk /public/vms/worldco-store5678-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:6E --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY5678
 ```
 
-At creation time, SLE Micro 5.3 will be installed on the machines and k3s will be installed on it.
+At creation time, SLE Micro 5.3 will be installed on the machines and k3s will be installed on it.   Now launch the Rancher webUI and watch the deployment happen!
