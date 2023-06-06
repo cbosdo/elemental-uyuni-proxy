@@ -22,6 +22,7 @@ metadata:
     proxy-fqdn: store1234-proxy.world-co.com
     store: store1234
     role: uyuni-proxy
+    storage-class: local-path
 spec:
   rkeConfig:
     machinePools:

@@ -53,7 +53,8 @@ helm upgrade --install rancher rancher-stable/rancher \
     --namespace cattle-system \
     --create-namespace \
     --set hostname=rancher.world-co.com \
-    --set replicas=1
+    --set replicas=1 \
+    --set global.cattle.psp.enabled=false
 ```
 
 Get the secret for the first authentication:
@@ -103,7 +104,7 @@ The only things to change for each store are the machine selector and the cluste
 Apply the `MachineRegistration` configuration:
 
 ```
-sed "s/SEALED_SECRETS_KEY/`cat sealed-secrets-key.yaml | base64 -w 0`/" src/registration.yaml | kubectl apply -f -
+sed "s/SEALED_SECRETS_KEY/$(cat sealed-secrets-key.yaml | base64 -w 0)/" src/registration.yaml | kubectl apply -f -
 ```
 
 Apply the store resources configuration: `kubectl apply -f src/store1234.yaml`
@@ -113,7 +114,7 @@ Apply the store resources configuration: `kubectl apply -f src/store1234.yaml`
 Fetch the configuration from the machine registration.
 
 ```
-wget --no-check-certificate `kubectl get machineregistration -n fleet-default proxy-nodes -o jsonpath="{.status.registrationURL}"` -O initial-registration.yaml
+wget --no-check-certificate $(kubectl get machineregistration -n fleet-default proxy-nodes -o jsonpath="{.status.registrationURL}") -O initial-registration.yaml
 ```
 
 Get the script to generate the ISO image:
@@ -161,6 +162,20 @@ cd ${GIT_REPO}
 git commit -a -m "Updated the secrets and config"
 git push
 ```
+# Preparing an NFS server
+
+***Under construction***: An NFS server has been added to the mix in order to demonstrate the use of multi-node cluster.
+Until [Fleet's issue #1552](https://github.com/rancher/fleet/issues/1552) has been addressed, all branches need to have an NFS server and I was too lazy to create multiple ones.
+Thus all stores need to have the `store5678-nfs.world-co.com` machine setup even if they don't use NFS.
+
+Install `nfs-kernel-server` on the NFS server machine and add the following line to the `/etc/exports` file:
+
+```
+/volumes	store*-proxy*.world-co.com(rw,no_root_squash)
+```
+
+Note that `no_root_squash` is required for the provisioner to be able to create volumes.
+Then enable the nfs server service: `systemctl enable --now nfsserver`.
 
 # Create the proxy machine:
 
@@ -168,9 +183,9 @@ git push
 The machines to boot with the Elemental ISO are required to be UEFI-enabled and have a TPM device.
 In the demo environment I use virtual machines created as following:
 ```
-virt-install -n worldco-store1234-proxy --memory 4096 --vcpus 2 --cdrom $PWD/elemental-teal.x86_64.iso --disk /public/vms/worldco-store1234-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:64 --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY1234
+virt-install -n worldco-store1234-proxy --memory 3072 --vcpus 2 --cdrom $PWD/elemental-teal.x86_64.iso --disk /public/vms/worldco-store1234-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:64 --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY1234
 
-virt-install -n worldco-store5678-proxy --memory 4096 --vcpus 2 --cdrom $PWD/elemental-teal.x86_64.iso --disk /public/vms/worldco-store5678-proxy.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:6E --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY5678
+virt-install -n worldco-store5678-proxy-host1 --memory 3072 --vcpus 2 --cdrom $PWD/elemental-teal.x86_64.iso --disk /public/vms/worldco-store5678-proxy-host1.qcow2,size=60 --network network=world-co,mac.address=2a:c3:a7:a7:00:6E --graphics vnc --tpm emulator,backend.version=2.0 --boot uefi --os-variant slem5.2 --sysinfo system.serial=PXY5678-1
 ```
 
 At creation time, SLE Micro 5.3 will be installed on the machines and k3s will be installed on it.

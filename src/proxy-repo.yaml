@@ -11,6 +11,7 @@ spec:
     - metallb/config
     - sealedsecrets
     - proxy-secrets
+    - nfs
     - proxy
   targets:
     - name: store1

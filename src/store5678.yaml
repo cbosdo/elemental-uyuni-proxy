@@ -10,7 +10,10 @@ spec:
         matchExpressions:
           - key: serialNumber
             operator: In
-            values: [ 'PXY5678' ]
+            values:
+            - PXY5678-1
+            - PXY5678-2
+            - PXY5678-3
 ---
 kind: Cluster
 apiVersion: provisioning.cattle.io/v1
@@ -18,10 +21,12 @@ metadata:
   name: store5678-proxy-cluster
   namespace: fleet-default
   labels:
-    proxy-ip: 192.168.111.111
+    proxy-ip: 192.168.111.113
     proxy-fqdn: store5678-proxy.world-co.com
+    nfs: store5678-nfs.world-co.com
     store: store5678
     role: uyuni-proxy
+    storage-class: nfs-client
 spec:
   rkeConfig:
     machinePools:
@@ -32,7 +37,7 @@ spec:
           kind: MachineInventorySelectorTemplate
           name: store5678-machine-selector
         name: pool1
-        quantity: 1
+        quantity: 3
         unhealthyNodeTimeout: 0s
         workerRole: true
     machineGlobalConfig:
