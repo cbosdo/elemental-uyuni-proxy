@@ -16,8 +16,9 @@
     <type image="iso"
         primary="true"
         hybridpersistent="false"
+        firmware="efi"
         flags="overlay">
-    <bootloader name="grub2"/>
+      <bootloader name="grub2"/>
     </type>
   </preferences>
 
