@@ -2,7 +2,7 @@
 
 <!-- OBS-Imagerepo: obsrepositories:/ -->
 
-<image schemaversion="6.5" name="micro-for-rancher-image" xmlns:suse_label_helper="com.suse.label_helper">
+<image schemaversion="7.5" name="micro-for-rancher-image" xmlns:suse_label_helper="com.suse.label_helper">
   <description type="system">
     <author>SUSE LLC</author>
     <contact>https://www.suse.com/</contact>
@@ -16,7 +16,9 @@
     <type image="iso"
         primary="true"
         hybridpersistent="false"
-        flags="overlay"/>
+        flags="overlay">
+    <bootloader name="grub2"/>
+    </type>
   </preferences>
 
   <repository type="rpm-md">
